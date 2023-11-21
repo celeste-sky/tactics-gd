@@ -1,0 +1,28 @@
+[gd_resource type="TileSet" load_steps=3 format=3 uid="uid://chwq55nbbu33y"]
+
+[ext_resource type="Texture2D" uid="uid://cfuc6l4gsrt1p" path="res://sprites/map.png" id="1_gaa2x"]
+
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_g3t2a"]
+texture = ExtResource("1_gaa2x")
+texture_region_size = Vector2i(64, 64)
+0:0/0 = 0
+0:0/0/custom_data_0 = 1
+1:0/0 = 0
+1:0/0/custom_data_0 = 1
+2:0/0 = 0
+2:0/0/custom_data_0 = 2
+3:0/0 = 0
+3:0/0/custom_data_0 = 2
+4:0/0 = 0
+4:0/0/custom_data_0 = 2
+5:0/0 = 0
+5:0/0/custom_data_0 = 3
+6:0/0 = 0
+6:0/0/custom_data_0 = 3
+
+[resource]
+tile_size = Vector2i(64, 64)
+custom_data_layer_0/name = "travel_cost"
+custom_data_layer_0/type = 2
+sources/15 = SubResource("TileSetAtlasSource_g3t2a")
+tile_proxies/coords_level = [[8, Vector2i(0, 0)], [15, Vector2i(0, 0)], [9, Vector2i(0, 0)], [15, Vector2i(1, 0)], [10, Vector2i(0, 0)], [15, Vector2i(2, 0)], [11, Vector2i(0, 0)], [15, Vector2i(3, 0)], [12, Vector2i(0, 0)], [15, Vector2i(4, 0)], [13, Vector2i(0, 0)], [15, Vector2i(5, 0)], [14, Vector2i(0, 0)], [15, Vector2i(6, 0)]]

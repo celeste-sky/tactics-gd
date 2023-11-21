@@ -1,0 +1,17 @@
+[gd_scene load_steps=4 format=3 uid="uid://doad0ngjkpwfn"]
+
+[ext_resource type="Script" path="res://tank.gd" id="1_8jx1a"]
+[ext_resource type="Texture2D" uid="uid://db16m15ff6igv" path="res://sprites/satan.png" id="1_ttpd5"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_wkyca"]
+size = Vector2(64, 64)
+
+[node name="Tank" type="Area2D"]
+script = ExtResource("1_8jx1a")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+z_index = 1
+texture = ExtResource("1_ttpd5")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_wkyca")

@@ -1,0 +1,51 @@
+[gd_scene load_steps=5 format=3 uid="uid://bmo8ph4krgmvh"]
+
+[ext_resource type="Script" path="res://main.gd" id="1_cs76w"]
+[ext_resource type="TileSet" uid="uid://chwq55nbbu33y" path="res://map_tiles.tres" id="1_ftekf"]
+[ext_resource type="PackedScene" uid="uid://dlxx6tpnh8ig6" path="res://player.tscn" id="2_30py8"]
+[ext_resource type="PackedScene" uid="uid://doad0ngjkpwfn" path="res://tank.tscn" id="3_oeab5"]
+
+[node name="Main" type="Node2D"]
+script = ExtResource("1_cs76w")
+
+[node name="Map" type="TileMap" parent="."]
+tile_set = ExtResource("1_ftekf")
+cell_quadrant_size = 64
+format = 2
+layer_0/tile_data = PackedInt32Array(1, 65551, 0, 0, 65551, 0, 65536, 65551, 0, 65537, 131087, 0, 65538, 65551, 0, 2, 15, 0, 131072, 65551, 0, 131073, 65551, 0, 131074, 65551, 0, 131075, 65551, 0, 65539, 15, 0, 3, 15, 0, 196611, 196623, 0, 196610, 15, 0, 196609, 65551, 0, 196608, 15, 0, 262144, 65551, 0, 327680, 196623, 0, 393216, 262159, 0, 458752, 393231, 0, 4, 262159, 0, 5, 393231, 0, 6, 393231, 0, 7, 393231, 0, 65543, 327695, 0, 131079, 262159, 0, 196615, 65551, 0, 262151, 65551, 0, 327687, 65551, 0, 393223, 65551, 0, 458759, 65551, 0, 458758, 65551, 0, 458757, 65551, 0, 458756, 262159, 0, 458755, 327695, 0, 458754, 393231, 0, 458753, 393231, 0, 393217, 393231, 0, 327681, 262159, 0, 262145, 196623, 0, 262146, 262159, 0, 327682, 327695, 0, 393218, 393231, 0, 393219, 262159, 0, 327683, 196623, 0, 262147, 262159, 0, 262148, 196623, 0, 327684, 15, 0, 393220, 196623, 0, 393221, 15, 0, 393222, 131087, 0, 327686, 65551, 0, 327685, 65551, 0, 262149, 65551, 0, 196613, 196623, 0, 131077, 262159, 0, 65541, 327695, 0, 65542, 393231, 0, 131078, 327695, 0, 196614, 65551, 0, 262150, 15, 0, 65540, 196623, 0, 131076, 196623, 0, 196612, 327695, 0)
+
+[node name="Player1" parent="." instance=ExtResource("2_30py8")]
+position = Vector2(160, 96)
+
+[node name="Player2" parent="." instance=ExtResource("2_30py8")]
+position = Vector2(96, 160)
+
+[node name="Tank1" parent="." instance=ExtResource("3_oeab5")]
+position = Vector2(480, 352)
+
+[node name="Tank2" parent="." instance=ExtResource("3_oeab5")]
+position = Vector2(352, 480)
+
+[node name="Highlights" type="Node2D" parent="."]
+
+[node name="UI" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 0
+offset_top = 512.0
+offset_right = 512.0
+offset_bottom = 528.0
+
+[node name="EndTurn" type="Button" parent="UI"]
+layout_mode = 0
+offset_left = 216.0
+offset_top = 8.0
+offset_right = 294.0
+offset_bottom = 39.0
+disabled = true
+text = "End Turn"
+
+[connection signal="clicked" from="Player1" to="." method="_on_player_clicked"]
+[connection signal="clicked" from="Player2" to="." method="_on_player_clicked"]
+[connection signal="clicked" from="Tank1" to="." method="_on_tank_clicked"]
+[connection signal="clicked" from="Tank2" to="." method="_on_tank_clicked"]
+[connection signal="pressed" from="UI/EndTurn" to="." method="_on_end_turn_pressed"]
