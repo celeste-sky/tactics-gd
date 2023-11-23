@@ -4,13 +4,9 @@ extends Node2D
 
 var moving_player = null
 
-# Called when the node enters the scene tree for the first time.
 func _ready():
-    print($Map.get_surrounding_cells(Vector2i(0, 0)))
-    pass # Replace with function body.
+    pass
 
-
-# Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(_delta):
     pass
 
@@ -35,25 +31,35 @@ func highlight_move(mover: Node2D):
     clear_highlight()
 
     # BFS through neighboring cells, up to move cost
-    var visited = {to_coord(mover.position): true}
-    var q = [{coord = to_coord(mover.position), cost = 0}]
+    var start = {coord = to_coord(mover.position), cost = 0}
+    var visited = {start.coord: start}
+    var q = [start]
     while q.size() > 0:
+        # maintain priority queue (inefficiently but shouldn't matter)
+        q.sort_custom(func(a, b): return b.cost > a.cost)
         var cell = q.pop_front()
+
         highlight(cell.coord, move_highlight)
+
         for neigh in $Map.get_surrounding_cells(cell.coord):
-            if neigh in visited:
-                continue
-            visited[neigh] = true
             var data = $Map.get_cell_tile_data(0, neigh)
             if data == null:
                 # i.e. off the map
                 continue
-            # Bug: this isn't necessarily the min cost because the queue isn't
-            # cost-sorted, and it won't be re-visited
+
             var cost = cell.cost + data.get_custom_data("travel_cost")
-            if cost > mover.max_travel_cost:
+
+            if neigh in visited:
+                if cost < visited[neigh].cost:
+                    # Found a shorter path (i.e. going around a high cost
+                    # obstacle usually). It should hold that neigh is still
+                    # in the priority queue....
+                    visited[neigh].cost = cost
                 continue
-            q.append({coord = neigh, cost = cost})
+
+            if cost <= mover.max_travel_cost:
+                visited[neigh] = {coord = neigh, cost = cost}
+                q.append(visited[neigh])
 
 func to_coord(pixel: Vector2i):
     @warning_ignore("integer_division")
@@ -68,9 +74,6 @@ func _on_player_clicked(player: Node2D):
 
 func _on_tank_clicked(tank: Node2D):
     print("clicked tank " + tank.name)
-
-func _on_color_rect_gui_input(event):
-    print("clicked highlight "+str(event))
 
 func _on_highlight_input(event: InputEvent, rect: ColorRect):
     if event is InputEventMouseButton and event.pressed:
