@@ -3,9 +3,12 @@ extends Node2D
 @export var move_highlight = Color(0, 1.0, 0, 0.4)
 
 var moving_player = null
+var cells = {}
 
 func _ready():
-    pass
+    for c in get_children():
+        if c is Player or c is Tank:
+            cells[to_coord(c.position)] = {occupant = c}
 
 func _process(_delta):
     pass
@@ -46,6 +49,8 @@ func highlight_move(mover: Node2D):
             if data == null:
                 # i.e. off the map
                 continue
+            if neigh in cells and cells[neigh].occupant != null:
+                continue
 
             var cost = cell.cost + data.get_custom_data("travel_cost")
 
@@ -61,9 +66,21 @@ func highlight_move(mover: Node2D):
                 visited[neigh] = {coord = neigh, cost = cost}
                 q.append(visited[neigh])
 
+func move_mover(mover: Node2D, coord: Vector2i):
+    var old = to_coord(mover.position)
+    cells[old].occupant = null
+    if coord not in cells:
+        cells[coord] = {occupant = mover}
+    else:
+        cells[coord].occupant = mover
+    mover.position = to_pixel(coord)
+
 func to_coord(pixel: Vector2i):
     @warning_ignore("integer_division")
     return Vector2i(pixel.x / 64, pixel.y / 64)
+
+func to_pixel(coord: Vector2i):
+    return Vector2i(coord.x * 64 + 32, coord.y * 64 + 32)
 
 func _on_player_clicked(player: Node2D):
     print("clicked player " + player.name)
@@ -79,7 +96,7 @@ func _on_highlight_input(event: InputEvent, rect: ColorRect):
     if event is InputEventMouseButton and event.pressed:
         if event.button_index == MOUSE_BUTTON_LEFT and moving_player:
             $UI/EndTurn.disabled = false
-            moving_player.position = rect.position + Vector2(32, 32)
+            move_mover(moving_player, to_coord(rect.position))
             moving_player.has_moved = true
         clear_highlight()
 
