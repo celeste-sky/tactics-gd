@@ -73,7 +73,6 @@ func move_bfs(origin: Vector2i, visitor: Callable):
                 reached[neigh].path = cell.path + [neigh]
 
 func highlight_move_visitor(cell: Dictionary, mover: Node2D) -> bool:
-    print(str(cell))
     if len(cell.path) == 1:
         # first cell, would be occupied by mover, don't highlight.
         return true
@@ -97,6 +96,46 @@ func move_mover(mover: Node2D, coord: Vector2i):
         cells[coord].occupant = mover
     mover.position = to_pixel(coord)
 
+func find_target_visitor(cell: Dictionary, data: Dictionary) -> bool:
+    if len(cell.path) == 1:
+        # skip the origin cell
+        return true
+    if data.target != null:
+        # already found a target, stop searching
+        return false
+    if not cell.coord in cells:
+        return true
+    if cells[cell.coord].occupant is Player:
+        data.target = cells[cell.coord].occupant
+        data.path = cell.path
+        return false
+    return cells[cell.coord].occupant == null
+
+func enemy_turn():
+    for c in get_children():
+        if not c is Tank:
+            continue
+
+        # Find nearest player
+        var target_result = {target = null, path = null}
+        move_bfs(to_coord(c.position), find_target_visitor.bind(target_result))
+        print(c.name + " target: " + str(target_result))
+        if target_result.target == null:
+            print('no target found')
+            continue
+
+        # Move along shortest path toward player
+        var move_cost = 0
+        for i in range(1, len(target_result.path)):
+            var data = $Map.get_cell_tile_data(0, target_result.path[i])
+            var cost = data.get_custom_data("travel_cost")
+            if move_cost + cost > c.max_travel_cost:
+                move_mover(c, target_result.path[i-1])
+                break
+            if i + 1 == len(target_result.path):
+                move_mover(c, target_result.path[i-1])
+            move_cost += cost
+
 func _on_player_clicked(player: Node2D):
     print("clicked player " + player.name)
     if player.has_moved:
@@ -117,7 +156,8 @@ func _on_highlight_input(event: InputEvent, rect: ColorRect):
 
 func _on_end_turn_pressed():
     print("End Turn")
+    $UI/EndTurn.disabled = true
+    enemy_turn()
     for child in self.get_children():
         if child is Player:
             child.has_moved = false
-    $UI/EndTurn.disabled = true

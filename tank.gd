@@ -1,6 +1,8 @@
 extends Area2D
 class_name Tank
 
+@export var max_travel_cost = 6
+
 signal clicked(Node2D)
 
 func _input_event(viewport, event, shape_idx):
