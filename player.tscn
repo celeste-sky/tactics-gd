@@ -6,8 +6,11 @@
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_i46u5"]
 size = Vector2(64, 64)
 
-[node name="Player" type="Area2D"]
+[node name="Player" type="CharacterBody2D"]
 z_index = 1
+collision_mask = 0
+input_pickable = true
+motion_mode = 1
 script = ExtResource("1_xdg7q")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
