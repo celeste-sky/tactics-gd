@@ -17,6 +17,13 @@ func _input(event):
     if event.is_action_pressed("exit"):
         get_tree().quit()
 
+func to_coord(pixel: Vector2i):
+    @warning_ignore("integer_division")
+    return Vector2i(pixel.x / 64, pixel.y / 64)
+
+func to_pixel(coord: Vector2i):
+    return Vector2i(coord.x * 64 + 32, coord.y * 64 + 32)
+
 func highlight(coord: Vector2i, color: Color):
     var rect = ColorRect.new()
     rect.color = color
@@ -30,41 +37,56 @@ func clear_highlight():
     for child in $Highlights.get_children():
         child.queue_free()
 
-func highlight_move(mover: Node2D):
-    clear_highlight()
-
-    # BFS through neighboring cells, up to move cost
-    var start = {coord = to_coord(mover.position), cost = 0}
-    var visited = {start.coord: start}
-    var q = [start]
-    while q.size() > 0:
+func move_bfs(origin: Vector2i, visitor: Callable):
+    """
+    Call @p visitor with each cell ({coord: Vector2i, cost: int,
+    path: List[Vector2i]} sorted by cost.
+    Traversal proceeds through a given cell only if @p visitor returns true for
+    that cell.
+    """
+    var start = {coord = origin, cost = 0, path = [origin]}
+    var reached = {start.coord: start}
+    var pq = [start]
+    while pq.size() > 0:
         # maintain priority queue (inefficiently but shouldn't matter)
-        q.sort_custom(func(a, b): return b.cost > a.cost)
-        var cell = q.pop_front()
+        pq.sort_custom(func(a, b): return b.cost > a.cost)
 
-        highlight(cell.coord, move_highlight)
+        var cell = pq.pop_front()
+        if not visitor.call(cell):
+            continue
 
         for neigh in $Map.get_surrounding_cells(cell.coord):
             var data = $Map.get_cell_tile_data(0, neigh)
             if data == null:
                 # i.e. off the map
                 continue
-            if neigh in cells and cells[neigh].occupant != null:
-                continue
 
             var cost = cell.cost + data.get_custom_data("travel_cost")
 
-            if neigh in visited:
-                if cost < visited[neigh].cost:
-                    # Found a shorter path (i.e. going around a high cost
-                    # obstacle usually). It should hold that neigh is still
-                    # in the priority queue....
-                    visited[neigh].cost = cost
-                continue
+            if neigh not in reached:
+                reached[neigh] = {
+                    coord = neigh, cost = cost, path = cell.path + [neigh]
+                }
+                pq.append(reached[neigh])
+            elif cost < reached[neigh].cost:
+                reached[neigh].cost = cost
+                reached[neigh].path = cell.path + [neigh]
 
-            if cost <= mover.max_travel_cost:
-                visited[neigh] = {coord = neigh, cost = cost}
-                q.append(visited[neigh])
+func highlight_move_visitor(cell: Dictionary, mover: Node2D) -> bool:
+    print(str(cell))
+    if len(cell.path) == 1:
+        # first cell, would be occupied by mover, don't highlight.
+        return true
+    if cell.cost > mover.max_travel_cost:
+        return false
+    if cell.coord in cells and cells[cell.coord].occupant != null:
+        return false
+    highlight(cell.coord, move_highlight)
+    return true
+
+func highlight_move(mover: Node2D):
+    clear_highlight()
+    move_bfs(to_coord(mover.position), highlight_move_visitor.bind(mover))
 
 func move_mover(mover: Node2D, coord: Vector2i):
     var old = to_coord(mover.position)
@@ -74,13 +96,6 @@ func move_mover(mover: Node2D, coord: Vector2i):
     else:
         cells[coord].occupant = mover
     mover.position = to_pixel(coord)
-
-func to_coord(pixel: Vector2i):
-    @warning_ignore("integer_division")
-    return Vector2i(pixel.x / 64, pixel.y / 64)
-
-func to_pixel(coord: Vector2i):
-    return Vector2i(coord.x * 64 + 32, coord.y * 64 + 32)
 
 func _on_player_clicked(player: Node2D):
     print("clicked player " + player.name)
